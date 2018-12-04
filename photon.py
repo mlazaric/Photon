@@ -2,7 +2,7 @@
 import math, turtle
 
 currentX = 0.5
-currentY = 0.26
+currentY = 0.25
 angle = 0
 time = 0
 
@@ -12,9 +12,11 @@ TIME_STEP = 1e-4
 SPEED = 1
 RADIUS = 1/3
 RADIUS2 = RADIUS**2
+TURTLE_MAGNIFICATION = 100
 
 turtle.radians()
 turtle.speed(0)
+turtle.delay(0)
 
 for centerX in range(-5, 5):
     for centerY in range(-5, 5):
@@ -69,8 +71,34 @@ for timeOffset in range((int) ((END_TIME - START_TIME) / TIME_STEP)):
                         else:
                             angle = 4 * math.pi - angle - 2 * beta
                 
+                k = (currentY - centerY) / (currentX - centerX)
+                l = currentY - currentX * k
+
+                a = 1 + k**2
+                b = -2 * centerX + 2 * k * l - 2 * k * centerY
+                c = centerX**2 + l**2 - 2 * centerY * l + centerY**2 - RADIUS**2
+
+                x1 = (-b - math.sqrt(b**2 - 4 * a * c)) / (2 * a)
+                x2 = (-b + math.sqrt(b**2 - 4 * a * c)) / (2 * a)
+
+                y1 = k * x1 + l
+                y2 = k * x2 + l
+
+                if ((x1 - currentX)**2 + (y1 - currentY)**2) < ((x2 - currentX)**2 + (y2 - currentY)**2):
+                    delta = math.sqrt((x1 - currentX)**2 + (y1 - currentY)**2)
+                    currentX = x1
+                    currentY = y1
+                else:
+                    delta = math.sqrt((x2 - currentX)**2 + (y2 - currentY)**2)
+                    currentX = x2
+                    currentY = y2
+
                 turtle.setpos(100*currentX, 100*currentY)
                 turtle.setheading(angle)
+
+                currentX = currentX + delta * math.cos(angle)
+                currentY = currentY + delta * math.sin(angle)
+
     
     while angle > 2 * math.pi:
         angle -= 2 * math.pi
