@@ -88,22 +88,24 @@ for timeOffset in range((int) ((END_TIME - START_TIME) / TIME_STEP)):
                 normal = position - center
                 tangent = normal / 1j
 
+                # Normalise vectors
                 normal /= abs(normal)
                 tangent /= abs(tangent)
 
                 # Debug
                 line(LINE_SIZE, math.atan2(normal.imag, normal.real))
-                line(LINE_SIZE, math.atan2(normal.imag, normal.real) + math.pi)
                 line(LINE_SIZE, math.atan2(tangent.imag, tangent.real))
-                line(LINE_SIZE, math.atan2(tangent.imag, tangent.real) + math.pi)
 
                 alpha = math.acos((vector.real * tangent.real + vector.imag * tangent.imag) / (abs(vector) * abs(tangent)))
 
-                if alpha > math.pi / 2:
-                    alpha -= math.pi / 2
-
+                prev = vector
                 vector = math.sin(alpha) * normal + math.cos(alpha) * tangent
                 position += vector * delta;
+
+                #print(math.acos((vector.real * tangent.real + vector.imag * tangent.imag) / (abs(vector) * abs(tangent))))
+                #print(math.acos((prev.real * tangent.real + prev.imag * tangent.imag) / (abs(prev) * abs(tangent))))
+                print(position)
+                #input()
 
                 reflected = True
                 break
