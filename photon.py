@@ -1,7 +1,7 @@
 #! /bin/python
 import math, turtle
 
-position = 0.5 + 0.26j
+position = 0.5 + 0.25j
 vector = 1 + 0j
 time = 0
 
@@ -9,7 +9,6 @@ START_TIME = 0
 END_TIME = 20
 TIME_STEP = 1e-4
 RADIUS = 1/3
-RADIUS2 = RADIUS**2
 TURTLE_MAGNIFICATION = 100
 LINE_SIZE = TURTLE_MAGNIFICATION / 10
 
@@ -37,7 +36,7 @@ turtle.radians()
 turtle.speed(0)
 turtle.delay(0)
 
-for centerX in range(-5, 5):
+for centerX in range(-10, 10):
     for centerY in range(-5, 5):
         invSetPosition(centerX + 1j * centerY)
         dot()
@@ -93,19 +92,13 @@ for timeOffset in range((int) ((END_TIME - START_TIME) / TIME_STEP)):
                 tangent /= abs(tangent)
 
                 # Debug
-                line(LINE_SIZE, math.atan2(normal.imag, normal.real))
-                line(LINE_SIZE, math.atan2(tangent.imag, tangent.real))
+                # line(LINE_SIZE, math.atan2(normal.imag, normal.real))
+                # line(LINE_SIZE, math.atan2(tangent.imag, tangent.real))
 
                 alpha = math.acos((vector.real * tangent.real + vector.imag * tangent.imag) / (abs(vector) * abs(tangent)))
 
-                prev = vector
                 vector = math.sin(alpha) * normal + math.cos(alpha) * tangent
                 position += vector * delta;
-
-                #print(math.acos((vector.real * tangent.real + vector.imag * tangent.imag) / (abs(vector) * abs(tangent))))
-                #print(math.acos((prev.real * tangent.real + prev.imag * tangent.imag) / (abs(prev) * abs(tangent))))
-                print(position)
-                #input()
 
                 reflected = True
                 break
@@ -116,4 +109,5 @@ for timeOffset in range((int) ((END_TIME - START_TIME) / TIME_STEP)):
         if reflected:
             break
 
+print(position)
 input()
