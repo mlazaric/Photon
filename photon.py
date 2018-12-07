@@ -1,27 +1,34 @@
 #! /bin/python
-import math, turtle
+import turtle
+from sympy import Rational
+from sympy.geometry import Point, Segment2D, Circle, Ray, intersection, Line
+from math import floor, ceil, sqrt, pi
 
-position = 0.5 + 0.25j
-vector = 1 + 0j
+position = Point('0.5', '0.26')
+imprecise_position = Point('0.5', '0.26', evaluate=False)
+ray = Ray(position, angle=0.0)
 time = 0
 
-START_TIME = 0
-END_TIME = 20
-TIME_STEP = 1e-4
-RADIUS = 1/3
+STEP = 0.1
+RADIUS = Rational('1/3')
 TURTLE_MAGNIFICATION = 100
 LINE_SIZE = TURTLE_MAGNIFICATION / 10
+e = Line((0, 0), (1, 0))
+PRECISION = 50
+circles = []
+prev_circle = None
+distance = 20.0
 
-def setPosition(position):
-    turtle.setpos(TURTLE_MAGNIFICATION * position.real, TURTLE_MAGNIFICATION * position.imag)
+def setPosition(x, y):
+    turtle.setpos(TURTLE_MAGNIFICATION * x, TURTLE_MAGNIFICATION * y)
 
-def invSetPosition(position):
+def invSetPosition(x, y):
     turtle.penup()
-    setPosition(position)
+    setPosition(x, y)
     turtle.pendown()
 
-def circle(position):
-    invSetPosition(position - RADIUS * 1j)
+def circle(x, y):
+    invSetPosition(x, y - RADIUS)
     turtle.circle(TURTLE_MAGNIFICATION * RADIUS)
 
 def dot():
@@ -38,76 +45,80 @@ turtle.delay(0)
 
 for centerX in range(-10, 10):
     for centerY in range(-5, 5):
-        invSetPosition(centerX + 1j * centerY)
+        invSetPosition(centerX, centerY)
         dot()
-        circle(centerX + 1j * centerY)
+        circle(centerX, centerY)
 
-invSetPosition(position)
+invSetPosition(position.x, position.y)
 
-for timeOffset in range((int) ((END_TIME - START_TIME) / TIME_STEP)):
+while distance > 0:
+    imprecise_position = imprecise_position.translate(float(STEP * ray.direction.x), float(STEP * ray.direction.y)) 
 
-    time = START_TIME + TIME_STEP * timeOffset
-    position += TIME_STEP * vector
-
-    possibleCenterX = [math.floor(position.real), math.ceil(position.real)]
-    possibleCenterY = [math.floor(position.imag), math.ceil(position.imag)]
+    possibleCenterX = [floor(imprecise_position.x), ceil(imprecise_position.x)]
+    possibleCenterY = [floor(imprecise_position.y), ceil(imprecise_position.y)]
+    setPosition(imprecise_position.x, imprecise_position.y)
+    distance -= STEP
 
     for x in possibleCenterX:
         reflected = False
 
         for y in possibleCenterY:
-            center = x + y*1j
+            center = Point(x, y)
+            circle = Circle(center, RADIUS)
 
-            if abs(position - center) <= RADIUS:
-                setPosition(position)
-                dot()
+            if prev_circle == circle:
+                continue
 
-                # Backtrack to the beginning of the circle
-                k = vector.imag / vector.real
-                l = position.imag - k * position.real
+            if circle in circles:
+                continue
 
-                a = 1 + k**2
-                b = -2 * center.real + 2 * k * l - 2 * k * center.imag
-                c = center.real**2 + l**2 - 2 * center.imag * l + center.imag**2 - RADIUS**2
-
-                x1 = (-b + math.sqrt(b**2 - 4 * a * c)) / (2 * a)
-                x2 = (-b - math.sqrt(b**2 - 4 * a * c)) / (2 * a)
-
-                point1 = x1 + 1j * (k * x1 + l)
-                point2 = x2 + 1j * (k * x2 + l)
-
-                delta = min(abs(point1 - position), abs(point2 - position))
-
-                if abs(point1 - position) > abs(point2 - position):
-                    position = point2
+            intersect = intersection(ray, circle)
+            prev_position = position
+           
+            if len(intersect) == 1:
+                position = intersect[0]
+            elif len(intersect) == 2:
+                if float(position.distance(intersect[0])) < float(position.distance(intersect[1])):
+                    position = intersect[0]
                 else:
-                    position = point1
+                    position = intersect[1]
+            elif len(intersect) == 0:
+                circles.append(circle)
 
-                # Calculate normal and tangent
-                normal = position - center
-                tangent = normal / 1j
+            if len(intersect) >= 1:
+                if prev_position.distance(position) > distance:
+                    position.translate(ray.direction.scale(distance))
+                    distance = 0
+                    break
 
-                # Normalise vectors
-                normal /= abs(normal)
-                tangent /= abs(tangent)
+                distance -= imprecise_position.distance(position).evalf(PRECISION)
+                circles = []
+                prev_circle = circle
+                tangent = circle.tangent_lines(position)[0]
+                position = Point(position.x.evalf(PRECISION), position.y.evalf(PRECISION))
+                imprecise_position = position
 
-                # Debug
-                # line(LINE_SIZE, math.atan2(normal.imag, normal.real))
-                # line(LINE_SIZE, math.atan2(tangent.imag, tangent.real))
+                direction = position + ray.reflect(tangent).direction
+                direction = Point(direction.x.evalf(PRECISION), direction.y.evalf(PRECISION))
 
-                alpha = math.acos((vector.real * tangent.real + vector.imag * tangent.imag) / (abs(vector) * abs(tangent)))
+                ray = Ray(position, direction)
 
-                vector = math.sin(alpha) * normal + math.cos(alpha) * tangent
-                position += vector * delta;
-
+                setPosition(imprecise_position.x, imprecise_position.y)
+                print(float(imprecise_position.x),float(imprecise_position.y))
+                
                 reflected = True
-                break
 
             if reflected:
+                break
+
+            if distance <= 0:
                 break
 
         if reflected:
             break
 
-print(position)
+        if distance <= 0:
+                break
+
+print(float(position.x),float(position.y))
 input()
