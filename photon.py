@@ -15,9 +15,10 @@ TURTLE_MAGNIFICATION = 100
 LINE_SIZE = TURTLE_MAGNIFICATION / 10
 e = Line((0, 0), (1, 0))
 PRECISION = 50
+PRINT_PRECISION = 8
 circles = []
 prev_circle = None
-distance = 20.0
+distance = Rational(20)
 
 def setPosition(x, y):
     turtle.setpos(TURTLE_MAGNIFICATION * x, TURTLE_MAGNIFICATION * y)
@@ -51,13 +52,13 @@ for centerX in range(-10, 10):
 
 invSetPosition(position.x, position.y)
 
+print(position.x.evalf(PRINT_PRECISION), position.y.evalf(PRINT_PRECISION))
+
 while distance > 0:
-    imprecise_position = imprecise_position.translate(float(STEP * ray.direction.x), float(STEP * ray.direction.y)) 
+    imprecise_position = imprecise_position.translate((STEP * ray.direction.x).evalf(PRECISION), (STEP * ray.direction.y).evalf(PRECISION)) 
 
     possibleCenterX = [floor(imprecise_position.x), ceil(imprecise_position.x)]
     possibleCenterY = [floor(imprecise_position.y), ceil(imprecise_position.y)]
-    setPosition(imprecise_position.x, imprecise_position.y)
-    distance -= STEP
 
     for x in possibleCenterX:
         reflected = False
@@ -74,24 +75,24 @@ while distance > 0:
 
             intersect = intersection(ray, circle)
             prev_position = position
-           
+
             if len(intersect) == 1:
                 position = intersect[0]
             elif len(intersect) == 2:
-                if float(position.distance(intersect[0])) < float(position.distance(intersect[1])):
+                if (position.distance(intersect[0]).evalf(PRECISION)) < (position.distance(intersect[1]).evalf(PRECISION)):
                     position = intersect[0]
                 else:
                     position = intersect[1]
-            elif len(intersect) == 0:
+            else:
                 circles.append(circle)
 
             if len(intersect) >= 1:
                 if prev_position.distance(position) > distance:
-                    position.translate(ray.direction.scale(distance))
+                    position = prev_position.translate(ray.direction.x * distance, ray.direction.y * distance)
                     distance = 0
                     break
 
-                distance -= imprecise_position.distance(position).evalf(PRECISION)
+                distance -= prev_position.distance(position).evalf(PRECISION)
                 circles = []
                 prev_circle = circle
                 tangent = circle.tangent_lines(position)[0]
@@ -103,9 +104,10 @@ while distance > 0:
 
                 ray = Ray(position, direction)
 
-                setPosition(imprecise_position.x, imprecise_position.y)
-                print(float(imprecise_position.x),float(imprecise_position.y))
-                
+                setPosition(position.x, position.y)
+                dot()
+                print(position.x.evalf(PRINT_PRECISION), position.y.evalf(PRINT_PRECISION))
+
                 reflected = True
 
             if reflected:
@@ -118,7 +120,9 @@ while distance > 0:
             break
 
         if distance <= 0:
-                break
+            break
 
-print(float(position.x),float(position.y))
+setPosition(position.x, position.y)
+dot()
+print(position.x.evalf(PRINT_PRECISION), position.y.evalf(PRINT_PRECISION))
 input()
