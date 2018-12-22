@@ -1,12 +1,14 @@
-from .constants import *
-from .turtle_helpers import *
-
-from sympy import Rational, Point, Basic
-from sympy.geometry import Point, Ray, Circle, intersection
-
-from typing import Generator, Tuple, List, Any, Union
+"""
+Models a simple photon travelling through 2D space and reflecting off circular mirrors at specific positions.
+"""
 
 from math import floor, ceil
+from typing import Generator, Tuple, List
+
+from sympy import Rational
+from sympy.geometry import Point, Ray, Circle, intersection
+
+from .turtle_helpers import *
 
 
 class Photon:
