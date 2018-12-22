@@ -23,7 +23,11 @@ pip install -r requirements.txt
 python photon.py
 ```
 
-## Simulating a photon starting at `(0.5, 0.26)`
+## Default Simulation
+
+ * Initial position: `(0.5, 0.26)`
+ * Initial direction: to the right (`angle = 0`)
+ * Distance to cover: `20`
 
 ### Resulting Points
 
